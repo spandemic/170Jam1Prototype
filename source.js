@@ -24,8 +24,7 @@ const G = {
     WIDTH: 200,
     HEIGHT: 200,
 
-    ENEMY_MIN_BASE_SPEED: 1.0,
-    ENEMY_MAX_BASE_SPEED: 2.0
+    ENEMY_BASE_SPEED: 60
 };
 
 options = {
@@ -37,106 +36,63 @@ options = {
 };
 
 /**
- * @typedef {{
- * pos: number,
- * state: number,
- * }} Player
- */
-
-/**
- * @type { Player }
+ * @type {{pos: Vector, vel: Vector, radius: number}}
  */
 let player;
 
 /**
- * @typedef {{
- * pos: Vector,
- * type: number
- * }} Cell
- */
-
-/**
- * @type { Cell [] }
+ * @type {{pos: Vector, type: number, vel: number, speed: number}[]}
  */
 let cells;
+let nextCellTicks;
 
 /**
- * @type { number }
+ * @type {{pos: Vector, radius: number}[]}
  */
-let waveCount;
-
-/**
- * @type { number }
- */
-let cellSpeed;
+let explosions;
+let waveDiff;
 
 function update() {
   if (!ticks) {
     player = {
-        pos: vec(G.WIDTH * 0.5, G.HEIGHT * 0.5),
-        state: 0
+      pos: vec(G.WIDTH / 2, G.HEIGHT / 2),
+      vel: vec(),
+      radius: 0
     };
-
     cells = [];
-    waveCount = 0;
-    cellSpeed = 0;
-
+    nextCellTicks = 0;
+    explosions = [];
+    waveDiff = 1;
   }
 
-  if (cells.length === 0) {
-    cellSpeed = rnd(G.ENEMY_MIN_BASE_SPEED, G.ENEMY_MAX_BASE_SPEED);
-    for (let i = 0; i < 9; i++) {
-        const posX = rnd(0, G.WIDTH);
-        const posY = rnd(0, G.HEIGHT);
-        const cellType = rnd(0, 1);
-        cells.push({ 
-            pos: vec(posX, posY),
-            type: cellType });
-    }
-    waveCount++;
-}
-
+  color("black");
+  char("a", player.pos.x, player.pos.y);
   
-  if (input.isJustPressed) {
-    if (player.state == 0) {
-        color("red");
-        player.state = 1;
-    } else if (player.state == 1) {
-        color("green");
-        player.state = 0;
-    }
-    }
-  char("a", player.pos);
+  nextCellTicks--;
+  if (nextCellTicks < 0) {
+    let i = floor(rnd(5, 10) * difficulty);
+    times(i, () => {
+      const pos = vec(G.WIDTH / 2, G.HEIGHT / 2).addWithAngle(rnd(PI * 2), rnd(40, 150));
+      const type = (rnd(10, 50) < 40 ? 1 : 0);
+      const vel = rnd(1, sqrt(difficulty)) * 0.01;
+      const speed = sqrt(difficulty) * 0.4;
+      cells.push({ pos, type, vel, speed });
+    });
+    nextCellTicks = rnd(50, 80);
+  }
+  
+  remove(cells, (c) => {
+    
+    // moves cells towards player/center of screen
+    const xAngle = c.pos.x - G.WIDTH / 2;
+    const yAngle = c.pos.y - G.HEIGHT / 2;
+    xAngle < 0 ? c.pos.x += -(xAngle / G.ENEMY_BASE_SPEED) : c.pos.x -= (xAngle / G.ENEMY_BASE_SPEED);
+    yAngle < 0 ? c.pos.y += -(yAngle / G.ENEMY_BASE_SPEED) : c.pos.y -= (yAngle / G.ENEMY_BASE_SPEED);
+    
+    color(c.type == 1 ? "cyan" : "red");
+    char("b", c.pos);
 
-  remove(cells, (e) => {
-    color("black");
-    e.pos.angleTo(player.pos);
-    e.posX += cellSpeed;
-    e.posY += cellSpeed;
-    // if (e.firingCooldown <= 0) {
-    //     eBullets.push({
-    //         pos: vec(e.pos.x, e.pos.y),
-    //         angle: e.pos.angleTo(player.pos),
-    //         rotation: rnd()
-    //     });
-    //     e.firingCooldown = G.ENEMY_FIRE_RATE;
-    //     play("select"); // Be creative, you don't always have to follow the label
-    // }
+    // return()
+  })
 
-    // const isCollidingWithFBullets = char("b", e.pos).isColliding.char.a;
-    // if (isCollidingWithFBullets) {
-    //     color("yellow");
-    //     particle(e.pos);
-    //     play("explosion");
-    //     addScore(10 * waveCount, e.pos);
-    // }
-
-    const isCollidingWithPlayer = char("b", e.pos).isColliding.char.a;
-    if (isCollidingWithPlayer) {
-        console.log('hello');
-        play("powerUp");
-    }
-
-    // return (isCollidingWithFBullets || e.pos.y > G.HEIGHT);
-});
 }
