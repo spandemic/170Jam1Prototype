@@ -94,6 +94,7 @@ function update() {
     // })
 
     // fuck this shit LMAO
+    // manually generate wall around player
     wallBlock.push({ pos: vec(G.WIDTH/2 - 3 * G.GAP, G.HEIGHT/2 - 3 * G.GAP), type: 1});
     wallBlock.push({ pos: vec(G.WIDTH/2 - 2 * G.GAP, G.HEIGHT/2 - 3 * G.GAP), type: 1});
     wallBlock.push({ pos: vec(G.WIDTH/2 - 1 * G.GAP, G.HEIGHT/2 - 3 * G.GAP), type: 1});
@@ -120,6 +121,7 @@ function update() {
     wallBlock.push({ pos: vec(G.WIDTH/2 - 3 * G.GAP, G.HEIGHT/2 - 2 * G.GAP), type: 0});
   }
 
+  // health indicator
   if (playerHealth === 3) {
     color("green");
   } else if (playerHealth === 2){
@@ -132,9 +134,10 @@ function update() {
   }
   char("a", player.pos.x, player.pos.y);
   
+  // generate cells
   nextCellTicks--;
   if (nextCellTicks < 0) {
-    let i = floor(rnd(3, 9) * difficulty);
+    let i = floor(rnd(3, 8) * difficulty);
     times(i, () => {
       const pos = vec(G.WIDTH / 2, G.HEIGHT / 2).addWithAngle(rnd(PI * 2), rnd(200, 600));
       const type = (rnd(10, 50) < 40 ? 1 : 0);
@@ -142,12 +145,15 @@ function update() {
     });
     nextCellTicks = rnd(30, 60);
     waveDiff += 1;
+
+    // increase speed based on difficulty
     if (G.ENEMY_BASE_SPEED > 40 && waveDiff % 11 === 0) {
       G.ENEMY_BASE_SPEED -= 5;
       console.log("speedup");
     }
   }
 
+  // generate walls
   remove(wallBlock, (w) => {
     color(w.type === 1 ? "cyan" : "red");
     w.type === 1 ? char("c", w.pos) : char("d", w.pos);
@@ -161,11 +167,13 @@ function update() {
     xAngle < 0 ? c.pos.x += -(xAngle / G.ENEMY_BASE_SPEED) : c.pos.x -= (xAngle / G.ENEMY_BASE_SPEED);
     yAngle < 0 ? c.pos.y += -(yAngle / G.ENEMY_BASE_SPEED) : c.pos.y -= (yAngle / G.ENEMY_BASE_SPEED);
     
+    // type 1 is good, type 0 is not
     color(c.type == 1 ? "cyan" : "red");
     const isCollidingWithWall = char("b", c.pos).isColliding.char.d;
     const isCollidingWithAbsorber = char("b", c.pos).isColliding.char.c;
     const isCollidingWithPlayer = char("b", c.pos).isColliding.char.a;
 
+    // player collision
     if(isCollidingWithPlayer) {
       if (c.type === 1) {
         addScore(10 + waveDiff, c.pos);
@@ -180,6 +188,7 @@ function update() {
       }
     }
 
+    // legacy scoring mechanic
     // if(isCollidingWithAbsorber && input.isJustPressed) {
     //   color(c.type == 1 ? "cyan" : "red");
     //   particle(c.pos);
@@ -190,6 +199,7 @@ function update() {
     return(isCollidingWithWall || isCollidingWithPlayer);
   });
 
+  // rotates wall
   if(input.isJustPressed) {
     let counter = 0;
     for(i = 0; i < wallBlock.length; i++) {
