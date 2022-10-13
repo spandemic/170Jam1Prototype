@@ -1,6 +1,7 @@
 title = "ACHILLES WHEEL";
 
 description = `
+[TAP] to Rotate
 `;
 
 characters = [
@@ -48,7 +49,8 @@ options = {
         x: G.WIDTH,
         y: G.HEIGHT
     },
-    theme: "dark"
+    theme: "pixel",
+    seed: 2
 };
 
 /**
@@ -130,23 +132,6 @@ function update() {
   }
   char("a", player.pos.x, player.pos.y);
   
-  
-
-  if(input.isJustPressed) {
-    let counter = 0;
-    for(i = 0; i < wallBlock.length; i++) {
-      if(wallBlock[i].type == 1 && counter < 6) {
-        let index = i;
-        let wallType = i + 6 > 23 ? (index - 24) + 6 : index + 6;
-        wallBlock[wallType].type = 1;
-        wallBlock[i].type = 0;
-
-        counter++;
-      }
-    }
-    counter = 0;
-  }
-
   nextCellTicks--;
   if (nextCellTicks < 0) {
     let i = floor(rnd(3, 9) * difficulty);
@@ -155,7 +140,7 @@ function update() {
       const type = (rnd(10, 50) < 40 ? 1 : 0);
       cells.push({ pos, type });
     });
-    nextCellTicks = rnd(80, 120);
+    nextCellTicks = rnd(30, 60);
     waveDiff += 1;
     if (G.ENEMY_BASE_SPEED > 40 && waveDiff % 11 === 0) {
       G.ENEMY_BASE_SPEED -= 5;
@@ -184,7 +169,7 @@ function update() {
     if(isCollidingWithPlayer) {
       if (c.type === 1) {
         addScore(10 + waveDiff, c.pos);
-        play("powerUp");
+        play("coin");
         color("green");
         particle(c.pos);
       } else {
@@ -195,13 +180,29 @@ function update() {
       }
     }
 
-    if(isCollidingWithAbsorber && input.isJustPressed) {
-      color(c.type == 1 ? "cyan" : "red");
-      particle(c.pos);
-      play("coin");
-      addScore(10, c.pos);
-    }
+    // if(isCollidingWithAbsorber && input.isJustPressed) {
+    //   color(c.type == 1 ? "cyan" : "red");
+    //   particle(c.pos);
+    //   play("coin");
+    //   addScore(5, c.pos);
+    // }
 
     return(isCollidingWithWall || isCollidingWithPlayer);
   });
+
+  if(input.isJustPressed) {
+    let counter = 0;
+    for(i = 0; i < wallBlock.length; i++) {
+      if(wallBlock[i].type == 1 && counter < 6) {
+        let index = i;
+        let wallType = i + 6 > 23 ? (index - 24) + 6 : index + 6;
+        wallBlock[wallType].type = 1;
+        wallBlock[i].type = 0;
+
+        counter++;
+      }
+    }
+    counter = 0;
+  }
+
 }
