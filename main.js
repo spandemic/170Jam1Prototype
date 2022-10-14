@@ -50,7 +50,9 @@ options = {
         y: G.HEIGHT
     },
     theme: "pixel",
-    // isCapturing: true,
+    isCapturing: true,
+    isCapturingGameCanvasOnly: true,
+    captureCanvasSize: 2,
     seed: 2
 };
 
