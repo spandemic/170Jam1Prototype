@@ -50,6 +50,7 @@ options = {
         y: G.HEIGHT
     },
     theme: "pixel",
+    // isCapturing: true,
     seed: 2
 };
 
@@ -186,6 +187,11 @@ function update() {
         play("hit");
         playerHealth--
       }
+    }
+
+    if(isCollidingWithWall) {
+      color(c.type === 1 ? "cyan" : "red");
+      particle(c.pos);
     }
 
     // legacy scoring mechanic
